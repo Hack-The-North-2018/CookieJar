@@ -57,10 +57,11 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        try:
-            user = auth.sign_in_with_email_and_password(email, password)
+        user = auth.sign_in_with_email_and_password(email, password)
+
+        if user:
             return render_template('myjarhome.html')
-        except:
+        else:
             return render_template('login.html')
 
 @app.route('/register', methods = ['GET', 'POST'])
