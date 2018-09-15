@@ -58,7 +58,7 @@ def login():
         password = request.form.get('password')
 
         try:
-            auth.sign_in_with_email_and_password(email, password)
+            user = auth.sign_in_with_email_and_password(email, password)
             return render_template('myjarhome.html')
         except:
             return render_template('login.html')
