@@ -1,6 +1,7 @@
+import firebase_admin
 from flask import *
 from tempfile import mkdtemp
-from firebase-admin import credentials
+from firebase_admin import credentials
 
 app = Flask(__name__)
 
