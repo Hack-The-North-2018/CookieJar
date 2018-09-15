@@ -52,22 +52,21 @@ def index():
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template('')
+        return render_template('login.html')
     else:
         email = request.form.get('email')
         password = request.form.get('password')
 
         try:
             auth.sign_in_with_email_and_password(email, password)
-            return render_template('')
+            return render_template('myjarhome.html')
         except:
-            return render_template('')
-    return render_template('')
+            return render_template('login.html')
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
     if request.method == 'GET':
-        return render_template('')
+        return render_template('register.html')
     else:
         email = request.form.get('email')
         password = request.form.get('password')
@@ -76,44 +75,49 @@ def register():
         # Check that username is not blank
         if not email:
             flash('Email cannot be blank')
-            return render_template('')
+            return render_template('register.html')
 
         # Check email format
         elif re.search(r'[^@]+@[^@]+\.[^@]+', email) == None:
             flash('Email is invalid. Please try again.')
-            return render_template('')
+            return render_template('register.html')
 
         # Check that password is not blank
         elif not password:
             flash('Password cannot be blank')
-            return render_template('')
+            return render_template('register.html')
 
         # Check that password and confirmation match
         elif password != confirm:
             flash('Password and confirmation do not match')
-            return render_template('')
+            return render_template('register.html')
 
         user = auth.create_user_with_email_and_password(email, password)
         print (auth.get_account_info(user['idToken']))
 
         auth.send_email_verification(user['idToken'])
 
-        return render_template('')
+        return render_template('registered.html')
 
 @login_required
 @app.route('/home')
 def home():
-    return render_template('')
+    return render_template('myjarhome.html')
 
 @login_required
-@app.route('/jars')
-def jars():
-    return render_template('')
+@app.route('/share')
+def share():
+    return render_template('share.html')
+
+@login_required
+@app.route('/group')
+def group():
+    return render_template('groupinter.html')
 
 @login_required
 @app.route('/history')
 def history():
-    return render_template('')
+    return render_template('history.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
