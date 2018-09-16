@@ -61,7 +61,7 @@ response = requests.get('https://api.td-davinci.com/api/branches',
     headers = { 'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJDQlAiLCJ0ZWFtX2lkIjoiZjE1ZWU0YzctODI1YS0zOWFiLTg2ZTQtY2I1MTEyMTMzNDVkIiwiZXhwIjo5MjIzMzcyMDM2ODU0Nzc1LCJhcHBfaWQiOiIxMjUzNDUzNy0zYmZmLTRjZjMtYjVhOC1jYmUwN2NjYWU0ZWEifQ._F2YZO7kwoW4ke6Y2qVn2j4TPiLoL2W9k-tjFMcok2o' })
 response_data = response.json()
 
-print(response_data)
+'''print(response_data)'''
 
 def login_required(f):
     @wraps(f)
@@ -243,48 +243,120 @@ def create():
         return redirect(url_for('share'))
 
 
-@app.route('/group/<groupId>')
+@app.route('/group/<groupId>', methods = ['GET', 'POST'])
 @login_required
 def group(groupId):
-    members = []
-    for group in db.reference('shares').get():
-        groupInfo = db.reference('shares/{0}'.format(group)).get()
-        print(groupInfo)
-        if str(groupId) == str(groupInfo['id']):
-            memberlist = groupInfo['members'].split(', ')
-            nameslist = groupInfo['names'].split(', ')
-            idslist = groupInfo['ids'].split(', ')
-            balanceslist = groupInfo['balances'].split(', ')
-            for i in range(len(memberlist)):
-                print(i)
-                members.append({
-                    'name': nameslist[i],
-                    'email': memberlist[i],
-                    'id': idslist[i],
-                    'balance': balanceslist[i]
-                    })
+    if request.method == 'GET':
+        members = []
+        for group in db.reference('shares').get():
+            groupInfo = db.reference('shares/{0}'.format(group)).get()
+            print(groupInfo)
+            print(groupId)
+            if str(groupId) == str(groupInfo['id']):
+                
+                memberlist = groupInfo['members'].split(', ')
+                nameslist = groupInfo['names'].split(', ')
+                idslist = groupInfo['ids'].split(', ')
+                balanceslist = groupInfo['balances'].split(', ')
+                for i in range(len(memberlist)):
+                    print(i)
+                    members.append({
+                        'name': nameslist[i],
+                        'email': memberlist[i],
+                        'id': idslist[i],
+                        'balance': balanceslist[i]
+                        })
 
-            # Group info
-            groupData = {
-                'name': groupInfo['name'],
-                'id': groupInfo['id'],
-                'count': str(len(members)),
-                'members': members
-            }
+                # Group info
+                groupData = {
+                    'name': groupInfo['name'],
+                    'id': groupInfo['id'],
+                    'count': str(len(members)),
+                    'members': members
+                }
+                break
+        current = {
+            'name': None,
+            'email': None,
+            'balance': None
+        }
+        return render_template('group.html', group = groupData, current = current, visibility = 'hidden')
+    else:
+        description = request.form.get("description")
+        amount = request.form.get("amount")
+        
+        members = []
+        for group in db.reference('shares').get():
+            groupInfo = db.reference('shares/{0}'.format(group)).get()
+            print(groupInfo)
+            if str(groupId) == str(groupInfo['id']):
+                memberlist = groupInfo['members'].split(', ')
+                nameslist = groupInfo['names'].split(', ')
+                idslist = groupInfo['ids'].split(', ')
+                balanceslist = groupInfo['balances'].split(', ')
+                for i in range(len(memberlist)):
+                    members.append({
+                        'name': nameslist[i],
+                        'email': memberlist[i],
+                        'id': idslist[i],
+                        'balance': balanceslist[i]
+                        })
 
-            break
+                # Group info
+                groupData = {
+                    'name': groupInfo['name'],
+                    'id': groupInfo['id'],
+                    'count': str(len(members)),
+                    'members': members
+                }
 
-    current = {
-        'name': None,
-        'email': None,
-        'balance': None
-    }
+                break
 
-    requested = []
-    active = []
-    history = []
+        current = {
+            'name': None,
+            'email': None,
+            'balance': None
+        }
 
-    return render_template('group.html', group = groupData, current = current, visibility = 'hidden')
+        payment = float(amount) / len(members)
+        index = idslist.index(str(session["user_id"]))
+        for i in range (len(members)):
+            if (i == index):
+                calc = float(balanceslist[i])
+                calc += (float(amount) - payment)
+                balanceslist[i] = str(calc)
+            else:
+                entry = {
+                    "amount": payment,
+                    "description": description,
+                    "id_from": i+1,
+                    "from": members[i]["name"],
+                    "to": members[index]["name"],
+                    "id_to": index+1,
+                    "time": str(datetime.now()),
+                    'id': str(random.randint(1,1000))
+                }
+                new_entry = root.child("history").push(entry)
+                calc = float(balanceslist[i])
+                calc -= payment
+                balanceslist[i] = str(calc)
+
+        balanceslist=", ".join(balanceslist)
+        #print (balanceslist)
+        for share in db.reference('shares').get():
+            
+            shareData = db.reference('shares/{0}'.format(share)).get()
+            print (shareData['id'])
+            print (groupId)
+            if int(shareData['id']) == int(groupId):
+                
+                edit_push = db.reference("shares/{0}".format(share)).update({
+                    'balances': balanceslist
+                })
+                return redirect(url_for("group", groupId=groupId))
+                
+
+        return render_template('group.html', group = groupData, current = current, visibility = 'hidden')
 
 '''
 @app.route('/group/<groupId>/<memberId>')

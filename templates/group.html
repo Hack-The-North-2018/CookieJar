@@ -18,11 +18,43 @@
             {% for member in group.members %}
                 <tr>
                     <td>{{ member.name }}</td>
-                    <td>{{ member.balance }}</td>
+                    <td>${{ member.balance }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Pay for Group</button>
+      
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Pay for Group</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            
+            <form method="POST" action="/group/{{ group.id }}">
+                <div class="modal-body">
+                        <div class="form-group">
+                            <input autocomplete="off" type="text" name="description" class="form-control" placeholder="Description" autofocus>
+                        </div>
+                        <div class="form-group">
+                            <input autocomplete="off" type="number" name="amount" class="form-control" placeholder="Amount">
+                        </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Confirm</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
     <!--
     <select class="form-control" name="member" onchange="window.location.href=this.value">
         <option value="" selected disabled>Select Group Member</option>
