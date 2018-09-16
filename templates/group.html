@@ -2,6 +2,83 @@
 
 {% block title %} Group {% endblock %}
 
-{% block main %} 
+{% block main %}
+    <h1>{{ group.name }}</h1>
+    <h4>{{ group.count }} members</h4>
+    <select class="form-control" name="member" onchange="window.location.href=this.value">
+        <option value="" selected disabled>Select Group Member</option>
+        {% for member in group.members %}
+            <option value="/group/{{ group.id }}/{{ member.id }}" {% if member.id == current.id %}selected{% endif %}>
+                {{ member.name }}
+            </option>
 
+        {% endfor %}
+    </select>
+    <br>
+    <hr>
+    <div style="visibility: {{ visibility }};">
+        <h2>{{ current.name }}</h2>
+        <h6>{{ current.email }}</h6>
+        <h4>Requested transactions:</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Request by</th>
+                    <th>Amount</th>
+                    <th>Time</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trans in requested %}
+                    <tr>
+                        <td>{{ trans.from }}</td>
+                        <td>{{ trans.amount }}</td>
+                        <td>{{ trans.time }}</td>
+                        <td>{% if trans.from != current.name %}<a href="/approve/{{ trans.id }}">Approve</a>{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Active transactions:</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Request by</th>
+                    <th>Amount</th>
+                    <th>Time</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trans in active %}
+                    <tr>
+                        <td>{{ trans.from }}</td>
+                        <td>{{ trans.amount }}</td>
+                        <td>{{ trans.time }}</td>
+                        <td>{% if trans.from != current.name %}<a href="/complete/{{ trans.id }}">Complete</a>{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h4>Completed transactions:</h4>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Request by</th>
+                    <th>Amount</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for trans in history %}
+                    <tr>
+                        <td>{{ trans.from }}</td>
+                        <td>{{ trans.amount }}</td>
+                        <td>{{ trans.time }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
