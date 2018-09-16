@@ -184,20 +184,15 @@ def home():
 @login_required
 def share():
     groups = []
-    for group in db.reference('groups').get():
-        groupData = db.reference('groups/{0}'.format(group)).get()
-        members, names, ids = [], [], []
-        for member in groupData['members']:
-            members.append(db.reference('groups/{0}/members/{1}'.format(group, member)).get()['email'])
-            names.append(db.reference('groups/{0}/members/{1}'.format(group, member)).get()['name'])
-            ids.append(db.reference('groups/{0}/members/{1}'.format(group, member)).get()['id'])
-        if str(session['user_id']) in members:
+    for group in db.reference('shares').get():
+        groupData = db.reference('shares/{0}'.format(group)).get()
+        if str(session['user_id']) in groupData['ids'].split(', '):
             groups.append({
                 'id': groupData['id'],
                 'name': groupData['name'],
-                'members': members,
-                'names': names,
-                'ids': ids
+                'members': groupData['members'].split(', '),
+                'names': groupData['names'].split(', '),
+                'ids': groupData['ids'].split(', ')
                 })
 
     return render_template('share.html', userGroups = groups)
@@ -227,44 +222,32 @@ def create():
             if member not in emails:
                 flash(member + " is not a registered user")
                 return redirect(url_for('create'))
-            elif member == lookup(session['user_id'])['email']:
-                flash('You cannot add yourself to a group')
-                return redirect(url_for('create'))
 
         # Determine next group id
         ids = []
-        for group in db.reference('groups').get():
-            ids.append(int(db.reference('groups/{0}'.format(group)).get()['id']))
+        for group in db.reference('shares').get():
+            ids.append(int(db.reference('shares/{0}'.format(group)).get()['id']))
         nextId = max(ids) + 1
 
         entry = {
             'id': nextId,
+            'members': lookup(session['user_id'])['email'] + ', ' + ', '.join(memberlist),
+            'names': lookup(session['user_id'])['name'] + ', ' + ', '.join([emaillookup(member)['name'] for member in memberlist]),
+            'ids': str(session['user_id']) + ', ' + ', '.join([str(emaillookup(member)['id']) for member in memberlist]),
             'name': name
         }
 
-        new_group = root.child('groups').push(entry)
-
-        members = memberlist.append(lookup(session['user_id'])['email']),
-        names = [emaillookup(member)['name'] for member in memberlist].append(lookup(session['user_id'])['email']),
-        ids = [emaillookup(member)['id'] for member in memberlist].append(str(session['user_id']))
-
-        combined = zip(members, names, ids)
-
-        for group in db.reference('groups').get():
-            groupInfo = db.reference('groups/{}'.format(group)).get()
-
-
-        for member in combined:
-
+        new_group = root.child('shares').push(entry)
 
         return redirect(url_for('share'))
+
 
 @app.route('/group/<groupId>')
 @login_required
 def group(groupId):
     members = []
-    for group in db.reference('groups').get():
-        groupInfo = db.reference('groups/{}'.format(group)).get()
+    for group in db.reference('shares').get():
+        groupInfo = db.reference('shares/{}'.format(group)).get()
         if groupId == groupInfo['id']:
             memberlist = groupInfo['members']
             for member in memberlist:
