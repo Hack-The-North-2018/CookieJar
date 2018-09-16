@@ -51,6 +51,8 @@ def index():
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
+    session.clear()
+
     if request.method == 'GET':
         return render_template('login.html')
     else:
@@ -61,6 +63,7 @@ def login():
         for user in db.reference('users').get():
             userData = db.reference('users/{0}'.format(user)).get()
             users.append({
+                'id': userData['id'],
                 'name': userData['name'],
                 'email': userData['email'],
                 'password': userData['password'],
@@ -73,14 +76,13 @@ def login():
                 userCreds = user
                 break
 
-        print ("Hello")
-        print (userCreds)
-
         if not userCreds or not check_password_hash(user['password'], password):
             flash('Invalid username and/or password')
             return render_template('login.html')
 
-        return render_template('myjarhome.html')
+        session['user_id'] = userCreds['id']
+
+        return redirect(url_for('home'))
 
 
 @app.route('/register', methods = ['GET', 'POST'])
@@ -112,7 +114,14 @@ def register():
             flash('Password and confirmation do not match')
             return render_template('register.html')
 
+        # Determine next user id
+        ids = []
+        for user in db.reference('items').get():
+            ids.append(int(db.reference('items/{0}'.format(user)).get()['id']))
+        nextId = max(ids)
+
         entry = {
+            'id': nextId,
             'name': request.form.get('name'),
             'email': request.form.get('email'),
             'password': generate_password_hash(request.form.get('password')),
@@ -120,17 +129,13 @@ def register():
         }
 
         new_user = root.child('users').push(entry)
-        '''
-        print (auth.get_account_info(user['idToken']))
 
-        auth.send_email_verification(user['idToken'])
-        '''
         return render_template('registered.html')
 
 @login_required
 @app.route('/home')
 def home():
-    return render_template('myjarhome.html')
+    return render_template('myjarhome.html', id = session['user_id'])
 
 @login_required
 @app.route('/share')
@@ -146,6 +151,13 @@ def group():
 @app.route('/history')
 def history():
     return render_template('history.html')
+
+@login_required
+@app.route('/logout')
+def logout():
+    session.clear()
+
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
