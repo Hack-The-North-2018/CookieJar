@@ -1,0 +1,17 @@
+{% block script %}
+    function replace(form) {
+        members = form.members.value;
+        warning = $("warning");
+        memberlist = members.split(" ")
+        if (members.substr(members.length - 1) == " ") {
+            if (!{{ emails }}.indexOf(memberlist[-1]) >= 0) {
+                $("#dne").value = memberlist[-1];
+                $("#warning").style.visibility = "visible";
+                $("#button").addClass("disabled");
+            } else {
+                $("#warning").style.visibility = "hidden";
+                $("#button").removeClass("disabled");
+            }
+        }
+    }
+{% endblock %}

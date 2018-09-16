@@ -53,6 +53,13 @@ def lookup(id):
             break
     return info
 
+def emaillookup(email):
+    for user in db.reference('users').get():
+        if db.reference('users/{0}'.format(user)).get()['email'] == email:
+            info = db.reference('users/{0}'.format(user)).get()
+            break
+    return info
+
 
 @app.route('/')
 def index():
@@ -154,11 +161,13 @@ def share():
     groups = []
     for group in db.reference('shares').get():
         groupData = db.reference('shares/{0}'.format(group)).get()
-        if str(session['user_id']) in groupData['members'].split(' '):
+        if str(session['user_id']) in groupData['ids'].split(', '):
             groups.append({
                 'id': groupData['id'],
                 'name': groupData['name'],
-                'members': groupData['members'].split(' ')
+                'members': groupData['members'].split(', '),
+                'names': groupData['names'].split(', '),
+                'ids': groupData['ids'].split(', ')
                 })
 
     return render_template('share.html', userGroups = groups)
@@ -169,6 +178,42 @@ def create():
     if request.method == 'GET':
         return render_template('create.html')
     else:
+        name = request.form.get('name')
+        members = request.form.get('members')
+        memberlist = members.split(', ')
+
+        emails = []
+        for user in db.reference('users').get():
+            emails.append(db.reference('users/{0}'.format(user)).get()['email'])
+
+        if not name:
+            flash('Jar Name cannot be blank')
+            return redirect(url_for('create'))
+        elif not members:
+            flash('Members cannot be blank')
+            return redirect(url_for('create'))
+
+        for member in memberlist:
+            if member not in emails:
+                flash(member + " is not a registered user")
+                return redirect(url_for('create'))
+
+        # Determine next group id
+        ids = []
+        for group in db.reference('shares').get():
+            ids.append(int(db.reference('shares/{0}'.format(group)).get()['id']))
+        nextId = max(ids) + 1
+
+        entry = {
+            'id': nextId,
+            'members': lookup(session['user_id'])['email'] + ', ' + ', '.join(memberlist),
+            'names': lookup(session['user_id'])['name'] + ', ' + ', '.join([emaillookup(member)['name'] for member in memberlist]),
+            'ids': str(session['user_id']) + ', ' + ', '.join([str(emaillookup(member)['id']) for member in memberlist]),
+            'name': name
+        }
+
+        new_group = root.child('shares').push(entry)
+
         return redirect(url_for('share'))
 
 @app.route('/group/<groupId>')
