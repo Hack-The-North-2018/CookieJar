@@ -7,17 +7,21 @@
 <div class="center">
     <h1>CookieJar</h1>
     <p>CookieJar is the sweetest way to seamlessly share expenses with your buddies.</p>
-    <a href="/create" class="btn btn-primary">New CookieShare</a>
+    <a href="/create" class="btn btn-primary">New CookieJar</a>
     <br><br>
-    {% for group in userGroups %}
-        <div class="card float-left" style="width: 25%;">
-            <img class="card-img-top" src="https://sports-images.vice.com/images/2017/01/25/when-nick-young-the-basketball-player-met-nick-young-the-meme-body-image-1485378510.jpg?crop=1xw:0.6590777262180975xh;center,center&resize=1200:*" alt="Card image cap">
-            <div class="card-body">
-                <h5 class="card-title">{{ group.name }}</h5>
-                <p class="card-text">{{ group.names | join(', ') }}</p>
-                <a href="/group/{{ group.id }}" class="btn btn-primary">View</a>
+    {% for groups in userGroups | batch(3) %}
+    <div class="card-deck">
+        {% for group in groups %}
+            <div class="card mt-3 float-left col-md-3" style="width: 30%;">
+                <img class="card-img-top" src="https://sports-images.vice.com/images/2017/01/25/when-nick-young-the-basketball-player-met-nick-young-the-meme-body-image-1485378510.jpg?crop=1xw:0.6590777262180975xh;center,center&resize=1200:*" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">{{ group.name }}</h5>
+                    <p class="card-text">{{ group.names | join(', ') }}</p>
+                    <a href="/group/{{ group.id }}" class="btn btn-primary">View</a>
+                </div>
             </div>
-        </div>
+        {% endfor %}
+    </div>
     {% endfor %}
 </div>
 
