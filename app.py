@@ -47,11 +47,11 @@ requests.post(
         'Content-Type': 'application/json'
     },
     data=json.dumps({
-        'webhook': 'https://webhook.site/4c7f9bc4-b7ea-4eea-8ba1-7ff6f0e5306e', 
+        'webhook': 'https://webhook.site/4c7f9bc4-b7ea-4eea-8ba1-7ff6f0e5306e',
         'features': {
-            'receiveReadReceipts': False, 
-            'receiveIsTyping': False, 
-            'manuallySendReadReceipts': False, 
+            'receiveReadReceipts': False,
+            'receiveIsTyping': False,
+            'manuallySendReadReceipts': False,
             'receiveDeliveryReceipts': False
         }
     })
@@ -234,7 +234,8 @@ def create():
             'members': lookup(session['user_id'])['email'] + ', ' + ', '.join(memberlist),
             'names': lookup(session['user_id'])['name'] + ', ' + ', '.join([emaillookup(member)['name'] for member in memberlist]),
             'ids': str(session['user_id']) + ', ' + ', '.join([str(emaillookup(member)['id']) for member in memberlist]),
-            'name': name
+            'name': name,
+            'balances': '0, ' * len(memberlist) + '0'
         }
 
         new_group = root.child('shares').push(entry)
@@ -247,17 +248,21 @@ def create():
 def group(groupId):
     members = []
     for group in db.reference('shares').get():
-        groupInfo = db.reference('shares/{}'.format(group)).get()
-        if groupId == groupInfo['id']:
-            memberlist = groupInfo['members']
-            for member in memberlist:
+        groupInfo = db.reference('shares/{0}'.format(group)).get()
+        print(groupInfo)
+        if str(groupId) == str(groupInfo['id']):
+            memberlist = groupInfo['members'].split(', ')
+            nameslist = groupInfo['names'].split(', ')
+            idslist = groupInfo['ids'].split(', ')
+            balanceslist = groupInfo['balances'].split(', ')
+            for i in range(len(memberlist)):
+                print(i)
                 members.append({
-                    'name': member['name'],
-                    'email': member['email'],
-                    'id': member['id']
+                    'name': nameslist[i],
+                    'email': memberlist[i],
+                    'id': idslist[i],
+                    'balance': balanceslist[i]
                     })
-
-            print(members)
 
             # Group info
             groupData = {
@@ -266,6 +271,8 @@ def group(groupId):
                 'count': str(len(members)),
                 'members': members
             }
+
+            break
 
     current = {
         'name': None,
@@ -277,12 +284,55 @@ def group(groupId):
     active = []
     history = []
 
-    return render_template('group.html', group = groupInfo, current = current, requested = requested, active = active, history = history, visibility = 'hidden')
+    return render_template('group.html', group = groupData, current = current, visibility = 'hidden')
 
+'''
 @app.route('/group/<groupId>/<memberId>')
 @login_required
 def groupCheck(groupId, memberId):
-    return render_template('group.html', visibility = 'visible')
+    members = []
+    for group in db.reference('shares').get():
+        groupInfo = db.reference('shares/{0}'.format(group)).get()
+        print(groupInfo)
+        if str(groupId) == str(groupInfo['id']):
+            memberlist = groupInfo['members'].split(', ')
+            nameslist = groupInfo['names'].split(', ')
+            idslist = groupInfo['ids'].split(', ')
+            balanceslist = groupInfo['balances'].split(', ')
+            for i in range(len(memberlist)):
+                members.append({
+                    'name': nameslist[i],
+                    'email': memberlist[i],
+                    'id': idslist[i],
+                    'balance': balanceslist[i]
+                    })
+            # Group info
+            groupData = {
+                'name': groupInfo['name'],
+                'id': groupInfo['id'],
+                'count': str(len(members)),
+                'members': members
+            }
+
+            index = idslist.index(memberId)
+            memberemail = memberlist[index]
+            membername = nameslist[index]
+
+
+            break
+
+    current = {
+        'name': None,
+        'email': None,
+        'balance': None
+    }
+
+    requested = []
+    active = []
+    history = []
+
+    return render_template('group.html', group = groupData, current = current, requested = requested, active = active, history = history, visibility = 'visible')
+'''
 
 @app.route('/history')
 @login_required

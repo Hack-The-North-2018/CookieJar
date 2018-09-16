@@ -5,6 +5,25 @@
 {% block main %}
     <h1>{{ group.name }}</h1>
     <h4>{{ group.count }} members</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <thead>
+                    <th>Name</th>
+                    <th>Balance</th>
+                </thead>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in group.members %}
+                <tr>
+                    <td>{{ member.name }}</td>
+                    <td>{{ member.balance }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <!--
     <select class="form-control" name="member" onchange="window.location.href=this.value">
         <option value="" selected disabled>Select Group Member</option>
         {% for member in group.members %}
@@ -81,4 +100,5 @@
             </tbody>
         </table>
     </div>
+-->
 {% endblock %}
