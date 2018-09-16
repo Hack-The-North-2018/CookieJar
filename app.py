@@ -134,7 +134,7 @@ def register():
 @app.route('/home')
 @login_required
 def home():
-    return render_template('myjarhome.html', id = session['user_id'])
+    return render_template('home.html', id = session['user_id'])
 
 @app.route('/share')
 @login_required
@@ -144,7 +144,7 @@ def share():
 @app.route('/group')
 @login_required
 def group():
-    return render_template('groupinter.html')
+    return render_template('group.html')
 
 @app.route('/history')
 @login_required
