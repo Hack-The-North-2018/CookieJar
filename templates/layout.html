@@ -16,10 +16,10 @@
     <script type="text/javascript" src="/static/scripts.js"></script>
 </head>
 
-<body>
+<body style="background-image: url(http://i.imgur.com/V3pzfuS.png)">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <ul class="navbar-nav mr-auto">
-            <li class="nav-item"><a class="navbar-brand" href="/home">CookieJar</a></li>
+            <li class="nav-item"><a class="navbar-brand" href="/home"><img src="https://i.imgur.com/XPDEWI3.png" height=60px width=60px></a></img></a></li>
           </ul>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -28,7 +28,6 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           {% if session.user_id %}
             <ul class="navbar-nav mr-auto">
-              <li class="nav-item"><a class="nav-link" href="/home">MyCookie</a></li>
               <li class="nav-item"><a class="nav-link" href="/share">CookieJar</a></li>
               <li class="nav-item"><a class="nav-link" href="/history">History</a></li>
             </ul>
