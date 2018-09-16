@@ -1,4 +1,4 @@
-import firebase_admin, requests, urllib.parse, pyrebase
+import firebase_admin, requests, urllib.parse, pyrebase, re
 from flask import *
 from pyrebase import *
 from tempfile import mkdtemp
@@ -57,12 +57,31 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
 
-        user = auth.sign_in_with_email_and_password(email, password)
+        users = []
+        for user in db.reference('users').get():
+            userData = db.reference('users/{0}'.format(user)).get()
+            users.append({
+                'name': userData['name'],
+                'email': userData['email'],
+                'password': userData['password'],
+                'shares': userData['shares']
+                })
 
-        if user:
-            return render_template('myjarhome.html')
-        else:
+        userCreds = ''
+        for user in users:
+            if user['email'] == email:
+                userCreds = user
+                break
+
+        print ("Hello")
+        print (userCreds)
+
+        if not userCreds or not check_password_hash(user['password'], password):
+            flash('Invalid username and/or password')
             return render_template('login.html')
+
+        return render_template('myjarhome.html')
+
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -93,11 +112,19 @@ def register():
             flash('Password and confirmation do not match')
             return render_template('register.html')
 
-        user = auth.create_user_with_email_and_password(email, password)
+        entry = {
+            'name': request.form.get('name'),
+            'email': request.form.get('email'),
+            'password': generate_password_hash(request.form.get('password')),
+            'shares': {}
+        }
+
+        new_user = root.child('users').push(entry)
+        '''
         print (auth.get_account_info(user['idToken']))
 
         auth.send_email_verification(user['idToken'])
-
+        '''
         return render_template('registered.html')
 
 @login_required
