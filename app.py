@@ -123,7 +123,7 @@ def register():
             'name': request.form.get('name'),
             'email': request.form.get('email'),
             'password': generate_password_hash(request.form.get('password')),
-            'shares': {}
+            'shares': ''
         }
 
         new_user = root.child('users').push(entry)
