@@ -43,6 +43,15 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+
+def lookup(id):
+    for user in db.reference('users').get():
+        if db.reference('users/{0}'.format(user)).get()['id'] == id:
+            info = db.reference('users/{0}'.format(user)).get()
+            break
+    return info
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -81,7 +90,6 @@ def login():
         session['user_id'] = userCreds['id']
 
         return redirect(url_for('home'))
-
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -134,7 +142,9 @@ def register():
 @app.route('/home')
 @login_required
 def home():
-    return render_template('home.html', id = session['user_id'])
+    userCreds = lookup(session['user_id'])
+
+    return render_template('home.html', user = userCreds)
 
 @app.route('/share')
 @login_required

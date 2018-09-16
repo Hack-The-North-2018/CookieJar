@@ -5,6 +5,13 @@
 {% endblock %}
 
 {% block main %}
-    {{ id }}
+    <h1>{{ user.name }}</h1>
+    <h6>{{ user.email }}</h6>
+    <h3>My CookieShares:</h3>
+    <ul>
+        {% for share in user.shares %}
+            <li>{{ share }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}
 
