@@ -128,30 +128,31 @@ def register():
 
         new_user = root.child('users').push(entry)
 
+        flash('Registered!')
         return redirect(url_for("home"))
 
-@login_required
 @app.route('/home')
+@login_required
 def home():
     return render_template('myjarhome.html', id = session['user_id'])
 
-@login_required
 @app.route('/share')
+@login_required
 def share():
     return render_template('share.html')
 
-@login_required
 @app.route('/group')
+@login_required
 def group():
     return render_template('groupinter.html')
 
-@login_required
 @app.route('/history')
+@login_required
 def history():
     return render_template('history.html')
 
-@login_required
 @app.route('/logout')
+@login_required
 def logout():
     session.clear()
 
