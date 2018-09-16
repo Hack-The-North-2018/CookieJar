@@ -27,8 +27,6 @@ config = {
 
 firebase = initialize_app(config)
 
-auth = firebase.auth()
-
 # Firebase Database
 cred = credentials.Certificate('cookiejar-tor1-firebase-adminsdk-frm0v-bfbd8235b5.json')
 firebase_admin.initialize_app(cred, {
@@ -116,9 +114,9 @@ def register():
 
         # Determine next user id
         ids = []
-        for user in db.reference('items').get():
-            ids.append(int(db.reference('items/{0}'.format(user)).get()['id']))
-        nextId = max(ids)
+        for user in db.reference('users').get():
+            ids.append(int(db.reference('users/{0}'.format(user)).get()['id']))
+        nextId = max(ids) + 1
 
         entry = {
             'id': nextId,
@@ -130,7 +128,7 @@ def register():
 
         new_user = root.child('users').push(entry)
 
-        return render_template('registered.html')
+        return redirect(url_for("home"))
 
 @login_required
 @app.route('/home')
