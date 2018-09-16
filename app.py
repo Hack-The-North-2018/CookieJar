@@ -1,4 +1,4 @@
-import firebase_admin, requests, urllib.parse, pyrebase
+import firebase_admin, requests, urllib.parse, pyrebase, re
 from flask import *
 from pyrebase import *
 from tempfile import mkdtemp
@@ -27,8 +27,6 @@ config = {
 
 firebase = initialize_app(config)
 
-auth = firebase.auth()
-
 # Firebase Database
 cred = credentials.Certificate('cookiejar-tor1-firebase-adminsdk-frm0v-bfbd8235b5.json')
 firebase_admin.initialize_app(cred, {
@@ -51,17 +49,39 @@ def index():
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
+    session.clear()
+
     if request.method == 'GET':
         return render_template('login.html')
     else:
         email = request.form.get('email')
         password = request.form.get('password')
 
-        try:
-            auth.sign_in_with_email_and_password(email, password)
-            return render_template('myjarhome.html')
-        except:
+        users = []
+        for user in db.reference('users').get():
+            userData = db.reference('users/{0}'.format(user)).get()
+            users.append({
+                'id': userData['id'],
+                'name': userData['name'],
+                'email': userData['email'],
+                'password': userData['password'],
+                'shares': userData['shares']
+                })
+
+        userCreds = ''
+        for user in users:
+            if user['email'] == email:
+                userCreds = user
+                break
+
+        if not userCreds or not check_password_hash(user['password'], password):
+            flash('Invalid username and/or password')
             return render_template('login.html')
+
+        session['user_id'] = userCreds['id']
+
+        return redirect(url_for('home'))
+
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -92,32 +112,51 @@ def register():
             flash('Password and confirmation do not match')
             return render_template('register.html')
 
-        user = auth.create_user_with_email_and_password(email, password)
-        print (auth.get_account_info(user['idToken']))
+        # Determine next user id
+        ids = []
+        for user in db.reference('users').get():
+            ids.append(int(db.reference('users/{0}'.format(user)).get()['id']))
+        nextId = max(ids) + 1
 
-        auth.send_email_verification(user['idToken'])
+        entry = {
+            'id': nextId,
+            'name': request.form.get('name'),
+            'email': request.form.get('email'),
+            'password': generate_password_hash(request.form.get('password')),
+            'shares': {}
+        }
 
-        return render_template('registered.html')
+        new_user = root.child('users').push(entry)
 
-@login_required
+        flash('Registered!')
+        return redirect(url_for("home"))
+
 @app.route('/home')
-def home():
-    return render_template('myjarhome.html')
-
 @login_required
+def home():
+    return render_template('myjarhome.html', id = session['user_id'])
+
 @app.route('/share')
+@login_required
 def share():
     return render_template('share.html')
 
-@login_required
 @app.route('/group')
+@login_required
 def group():
     return render_template('groupinter.html')
 
-@login_required
 @app.route('/history')
+@login_required
 def history():
     return render_template('history.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    session.clear()
+
+    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
