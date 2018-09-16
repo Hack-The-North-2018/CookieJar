@@ -38,6 +38,31 @@ firebase_admin.initialize_app(cred, {
 
 root = db.reference()
 
+# KIK
+
+requests.post(
+    'https://api.kik.com/v1/config',
+    auth=('cookiejarbot', '00c611f7-35fb-4843-8e78-cef7b59ca26a'),
+    headers={
+        'Content-Type': 'application/json'
+    },
+    data=json.dumps({
+        'webhook': 'https://webhook.site/4c7f9bc4-b7ea-4eea-8ba1-7ff6f0e5306e', 
+        'features': {
+            'receiveReadReceipts': False, 
+            'receiveIsTyping': False, 
+            'manuallySendReadReceipts': False, 
+            'receiveDeliveryReceipts': False
+        }
+    })
+)
+
+response = requests.get('https://api.td-davinci.com/api/branches',
+    headers = { 'Authorization': 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJDQlAiLCJ0ZWFtX2lkIjoiZjE1ZWU0YzctODI1YS0zOWFiLTg2ZTQtY2I1MTEyMTMzNDVkIiwiZXhwIjo5MjIzMzcyMDM2ODU0Nzc1LCJhcHBfaWQiOiIxMjUzNDUzNy0zYmZmLTRjZjMtYjVhOC1jYmUwN2NjYWU0ZWEifQ._F2YZO7kwoW4ke6Y2qVn2j4TPiLoL2W9k-tjFMcok2o' })
+response_data = response.json()
+
+print(response_data)
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
