@@ -6,7 +6,29 @@
 
 <div class="center">
     <h1>CookieJar</h1>
-    <p>CookieJar is the sweetest way to seamlessly share expenses with your buddies.</p>
+
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Transaction #</th>
+            <th scope="col">Description</th>
+            <th scope="col">From</th>
+            <th scope="col">To</th>
+            <th scope="col">Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for i in range (userTransactions | length) %}
+        <tr>
+            <th scope="row">{{ i + 1 }}</th>
+            <td>{{ userTransactions[i].description }}</td>
+            <td>{{ userTransactions[i].from }}</td>
+            <td>{{ userTransactions[i].to }}</td>
+            <td>{{ userTransactions[i].amount }}</td>
+        </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}

@@ -1,4 +1,7 @@
 import firebase_admin, requests, urllib.parse, pyrebase, re
+import random
+import datetime
+from datetime import *
 from flask import *
 from pyrebase import *
 from tempfile import mkdtemp
@@ -176,7 +179,31 @@ def group(groupId):
 @app.route('/history')
 @login_required
 def history():
-    return render_template('history.html')
+    entry = {
+        'id': random.randint(0,200),
+        'time': str(datetime.now()),
+        'description': 'Costco',
+        'id_from' : 1,
+        'from' : 'Oustan Ding',
+        'to' : 'admin',
+        'id_to' : 2,
+        'amount': random.uniform(0,200.50)
+    }
+    new_user = root.child('history').push(entry)
+    transactions = []
+    for group in db.reference('history').get():
+        transactionData = db.reference('history/{0}'.format(group)).get()
+        if str(session['user_id']) in str(transactionData['id_from']) or str(session['user_id']) in str(transactionData['id_to']):
+            transactions.append({
+                'id': transactionData['id'],
+                'time': transactionData['time'],
+                'description': transactionData['description'],
+                'from' : transactionData['from'],
+                'to' : transactionData['to'],
+                'amount': transactionData['amount']
+                })
+
+    return render_template('history.html', userTransactions = transactions)
 
 @app.route('/logout')
 @login_required
