@@ -179,17 +179,6 @@ def group(groupId):
 @app.route('/history')
 @login_required
 def history():
-    entry = {
-        'id': random.randint(0,200),
-        'time': str(datetime.now()),
-        'description': 'Costco',
-        'id_from' : 1,
-        'from' : 'Oustan Ding',
-        'to' : 'admin',
-        'id_to' : 2,
-        'amount': random.uniform(0,200.50)
-    }
-    new_user = root.child('history').push(entry)
     transactions = []
     for group in db.reference('history').get():
         transactionData = db.reference('history/{0}'.format(group)).get()
