@@ -43,7 +43,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-
 def lookup(id):
     for user in db.reference('users').get():
         if db.reference('users/{0}'.format(user)).get()['id'] == id:
@@ -149,11 +148,29 @@ def home():
 @app.route('/share')
 @login_required
 def share():
-    return render_template('share.html')
+    groups = []
+    for group in db.reference('shares').get():
+        groupData = db.reference('shares/{0}'.format(group)).get()
+        if str(session['user_id']) in groupData['members'].split(' '):
+            groups.append({
+                'id': groupData['id'],
+                'name': groupData['name'],
+                'members': groupData['members'].split(' ')
+                })
 
-@app.route('/group')
+    return render_template('share.html', userGroups = groups)
+
+@app.route('/create', methods = ['GET', 'POST'])
 @login_required
-def group():
+def create():
+    if request.method == 'GET':
+        return render_template('create.html')
+    else:
+        return redirect(url_for('share'))
+
+@app.route('/group/<groupId>')
+@login_required
+def group(groupId):
     return render_template('group.html')
 
 @app.route('/history')
